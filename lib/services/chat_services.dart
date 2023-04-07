@@ -72,32 +72,7 @@ class ChatService extends ChangeNotifier {
 
       yield messages;
     }
-    /*List<dynamic> allMessages = [];
-    final String chatId = userId.compareTo(_userService.userId) > 0
-        ? userId + "-" + _userService.userId
-        : _userService.userId + "-" + userId;
-
-    await _firestore
-        .collection("chats")
-        .doc(chatId)
-        .collection("messages")
-        .snapshots()
-        .listen((event) {
-      print("current data: ${event}");
-
-      List<dynamic> messagesData = event.docs;
-
-    allMessages=  messagesData.map((data) => MessageModel.fromFirestore(data)).toList();
-
-
-       for (var msg in event.docs) {
-        MessageModel _message;
-        _message = MessageModel.fromFirestore(msg);
-        allMessages.add(_message);
-      }
-    }, onError: (e) => print(e.toString()));
-
-    yield allMessages;*/
+   
   }
 
   Future<bool> _updateChat(
@@ -128,7 +103,7 @@ class ChatService extends ChangeNotifier {
       var sonuc = await _chatRef
           .where("chatUsers", arrayContains: _userService.userId)
           .get();
-      //Map<String, dynamic>? _okunanUserBilgileriMap = sonuc.data();
+     
 
       if (sonuc != null) {
         for (var chat in sonuc.docs) {
