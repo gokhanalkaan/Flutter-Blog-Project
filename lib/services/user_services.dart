@@ -114,9 +114,7 @@ class UserService extends ChangeNotifier {
           .get();
       print(sonuc);
 
-      /* if (sonuc == null) {
-        return null;
-      }*/
+      
 
       for (var user in sonuc.docs) {
         _foundedUser = UserModel.fromFirestore(user);
@@ -195,9 +193,7 @@ class UserService extends ChangeNotifier {
 final userProvider =
     ChangeNotifierProvider<UserService>((ref) => UserService());
 
-/*final getUserProvider = FutureProvider<UserModel?>((ref) {
-  return ref.watch(userProvider).getUser();
-});*/
+
 
 final authProvider = StreamProvider<User?>((ref) {
   return ref.watch(userProvider).user;
@@ -210,4 +206,4 @@ final currentuserIdProvider = StateProvider<String?>((ref) {
 final currentUserProvider = StateProvider<UserModel>((ref) {
   return ref.watch(userProvider).currentUser!;
 });
-//final addUserProvider = FutureProvider<UserService>((ref) => UserService() );
+
