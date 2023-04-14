@@ -23,7 +23,7 @@ class Blog extends ConsumerStatefulWidget {
 class _BlogState extends ConsumerState<Blog> {
   late Future<UserModel> _blogOwner;
   late int like = widget.blog.likedUsers!.length;
-
+  //late List<String> likedPosts;
   // late int like;
 
   @override
@@ -32,6 +32,7 @@ class _BlogState extends ConsumerState<Blog> {
     super.initState();
 
     _blogOwner = ref.read(userProvider).getUserWithId(widget.blog.creatorId!);
+    // likedPosts = ref.read(blogProvider).currentUserLikedPost;
   }
 
   @override
@@ -163,59 +164,62 @@ class _BlogState extends ConsumerState<Blog> {
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                          color: Colors.blue,
-                          border: Border.all(
-                              color: Colors.blueGrey.shade300, width: 2),
-                          borderRadius: BorderRadius.circular(40)),
-                      margin: EdgeInsets.only(right: 3),
-                      child: GestureDetector(
-                        onTap: (() async {
-                          UserModel? _foundedUser;
-                          _foundedUser = await ref
-                              .read(userProvider)
-                              .getUserWithId(widget.blog.creatorId!);
-                          print("profile page founded user:" +
-                              _foundedUser.userId!);
+              FutureBuilder<UserModel>(
+                  future: _blogOwner,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      UserModel _user = snapshot.data!;
+                      return Row(
+                        children: [
+                          Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  border: Border.all(
+                                      color: Colors.blueGrey.shade300,
+                                      width: 2),
+                                  borderRadius: BorderRadius.circular(40)),
+                              margin: EdgeInsets.only(right: 3),
+                              child: GestureDetector(
+                                onTap: (() async {
+                                  UserModel? _foundedUser;
+                                  _foundedUser = await ref
+                                      .read(userProvider)
+                                      .getUserWithId(widget.blog.creatorId!);
+                                  print("profile page founded user:" +
+                                      _foundedUser.userId!);
 
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ref.read(userProvider).userId ==
-                                            _foundedUser!.userId
-                                        ? ProfilePage(
-                                            user: _foundedUser,
-                                          )
-                                        : UserPage(
-                                            user: _foundedUser,
-                                          )),
-                          );
-                        }),
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png"),
-                        ),
-                      )),
-                  FutureBuilder<UserModel>(
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        UserModel _user = snapshot.data!;
-                        return Text(_user.username!,
-                            style: const TextStyle(fontSize: 10));
-                      } else {
-                        return CircularProgressIndicator();
-                      }
-                    },
-                    future: _blogOwner,
-                  ),
-                ],
-              ),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ref.read(userProvider).userId ==
+                                                    _foundedUser!.userId
+                                                ? ProfilePage(
+                                                    user: _foundedUser,
+                                                  )
+                                                : UserPage(
+                                                    user: _foundedUser,
+                                                  )),
+                                  );
+                                }),
+                                child: CircleAvatar(
+                                  backgroundImage: NetworkImage(_user
+                                              .profilePhoto!.length >
+                                          0
+                                      ? _user.profilePhoto!
+                                      : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png"),
+                                ),
+                              )),
+                          Text(_user.username!,
+                              style: const TextStyle(fontSize: 10))
+                        ],
+                      );
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  }),
               Divider(
                 height: 1,
                 thickness: 1,
