@@ -22,28 +22,47 @@ class Blog extends ConsumerStatefulWidget {
 
 class _BlogState extends ConsumerState<Blog> {
   late Future<UserModel> _blogOwner;
-  late int like = widget.blog.likedUsers!.length;
-
-  // late int like;
+  // widget.likeCount!;
+  late List<String> likedPosts;
+  late int like;
 
   @override
   void initState() {
     //  debugPrint("blog like" + like.toString());
+    // like = widget.blog.likedUsers!.length;
     super.initState();
 
+    like = widget.likeCount!;
+
     _blogOwner = ref.read(userProvider).getUserWithId(widget.blog.creatorId!);
+    // likedPosts = ref.read(blogProvider).currentUserLikedPost;
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("blog like" + like.toString());
     // debugPrint("rendered  " + widget.blog.blogTitle! + like.toString());
-    List<String> likedPosts = ref.watch(blogProvider).currentUserLikedPost;
+    List<Map<String, dynamic>> likedPosts =
+        ref.watch(blogProvider).currentUserLikedPost;
+    // like = widget.blog.likedUsers!.length;
+    // print(" curr user liked posts:" + likedPosts.toString());
+
+    debugPrint("blog like count " + like.toString());
 
     print(" curr user liked post length" + likedPosts.length.toString());
 
     int commentCount = widget.blog.comments!.length;
-    bool postLiked = likedPosts.contains(widget.blog.blogId);
+
+    print("liked posts []" + likedPosts.toString());
+    //bool postLiked = likedPosts.contains(widget.blog.blogId);
+
+    var post =
+        likedPosts.where((p) => p["blogId"] == widget.blog.blogId).toList();
+    print("post" + post.toString());
+    bool postLiked = post.isNotEmpty ? true : false;
+
+    if (postLiked) {
+      like = post.first["likeCount"];
+    }
 
     debugPrint("post liked" + postLiked.toString());
 
@@ -59,7 +78,7 @@ class _BlogState extends ConsumerState<Blog> {
           child: Column(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(0),
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -99,11 +118,11 @@ class _BlogState extends ConsumerState<Blog> {
                     child: Row(
                       children: [
                         IconButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (postLiked == false) {
                               ref
                                   .read(blogProvider.notifier)
-                                  .likePost(widget.blog.blogId!);
+                                  .likePost(widget.blog.blogId!, like);
 
                               setState(() {
                                 like += 1;
@@ -111,14 +130,20 @@ class _BlogState extends ConsumerState<Blog> {
                               });
                             } else {
                               if (like > 0) {
-                                setState(() {
-                                  ref
-                                      .read(blogProvider.notifier)
-                                      .removeLike(widget.blog.blogId!);
+                                bool res = await ref
+                                    .read(blogProvider.notifier)
+                                    .removeLike(widget.blog.blogId!);
 
-                                  like -= 1;
-                                  postLiked = false;
-                                });
+                                if (res == true) {
+                                  setState(() {
+                                    like -= 1;
+
+                                    //postLiked = false;
+                                    // postLiked = false;
+                                  });
+                                }
+                              } else {
+                                return;
                               }
                             }
                           },
@@ -163,59 +188,64 @@ class _BlogState extends ConsumerState<Blog> {
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                          color: Colors.blue,
-                          border: Border.all(
-                              color: Colors.blueGrey.shade300, width: 2),
-                          borderRadius: BorderRadius.circular(40)),
-                      margin: EdgeInsets.only(right: 3),
-                      child: GestureDetector(
-                        onTap: (() async {
-                          UserModel? _foundedUser;
-                          _foundedUser = await ref
-                              .read(userProvider)
-                              .getUserWithId(widget.blog.creatorId!);
-                          print("profile page founded user:" +
-                              _foundedUser.userId!);
+              FutureBuilder<UserModel>(
+                  future: ref
+                      .read(userProvider)
+                      .getUserWithId(widget.blog.creatorId!),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      UserModel _user = snapshot.data!;
+                      return Row(
+                        children: [
+                          Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  border: Border.all(
+                                      color: Colors.blueGrey.shade300,
+                                      width: 2),
+                                  borderRadius: BorderRadius.circular(40)),
+                              margin: EdgeInsets.only(right: 3),
+                              child: GestureDetector(
+                                onTap: (() async {
+                                  UserModel? _foundedUser;
+                                  _foundedUser = await ref
+                                      .read(userProvider)
+                                      .getUserWithId(widget.blog.creatorId!);
+                                  print("profile page founded user:" +
+                                      _foundedUser.userId!);
 
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ref.read(userProvider).userId ==
-                                            _foundedUser!.userId
-                                        ? ProfilePage(
-                                            user: _foundedUser,
-                                          )
-                                        : UserPage(
-                                            user: _foundedUser,
-                                          )),
-                          );
-                        }),
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png"),
-                        ),
-                      )),
-                  FutureBuilder<UserModel>(
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        UserModel _user = snapshot.data!;
-                        return Text(_user.username!,
-                            style: const TextStyle(fontSize: 10));
-                      } else {
-                        return CircularProgressIndicator();
-                      }
-                    },
-                    future: _blogOwner,
-                  ),
-                ],
-              ),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ref.read(userProvider).userId ==
+                                                    _foundedUser!.userId
+                                                ? ProfilePage(
+                                                    user: _foundedUser,
+                                                  )
+                                                : UserPage(
+                                                    user: _foundedUser,
+                                                  )),
+                                  );
+                                }),
+                                child: CircleAvatar(
+                                  backgroundImage: NetworkImage(_user
+                                              .profilePhoto!.length >
+                                          0
+                                      ? _user.profilePhoto!
+                                      : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png"),
+                                ),
+                              )),
+                          Text(_user.username!,
+                              style: const TextStyle(fontSize: 10))
+                        ],
+                      );
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  }),
               Divider(
                 height: 1,
                 thickness: 1,

@@ -43,6 +43,12 @@ class CategoryPage extends StatelessWidget {
                     height: 10,
                   ),
                   Category(
+                    categoryname: 'Travelling',
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Category(
                     categoryname: 'Fashion',
                   ),
                   SizedBox(

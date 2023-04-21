@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_blog_app/models/user_model.dart';
 import 'package:flutter_blog_app/pages/profile_page.dart';
+import 'package:flutter_blog_app/pages/user_page.dart';
 import 'package:flutter_blog_app/services/user_services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -62,13 +63,21 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             _user != null
                 ? GestureDetector(
                     onTap: (() {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProfilePage(
-                                  user: _user!,
-                                )),
-                      );
+                      _user!.userId != ref.read(userProvider).userId
+                          ? Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserPage(
+                                        user: _user!,
+                                      )),
+                            )
+                          : Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ProfilePage(
+                                        user: _user!,
+                                      )),
+                            );
                     }),
                     child: Container(
                       child: Row(

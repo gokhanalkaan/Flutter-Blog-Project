@@ -54,7 +54,10 @@ class _BlogsPageState extends ConsumerState<BlogsPage> {
                 shrinkWrap: true,
                 itemBuilder: ((context, index) {
                   BlogModel _blg = _blogs[index];
-                  return Blog(blog: _blg);
+                  return Blog(
+                    blog: _blg,
+                    likeCount: _blg.likeCount,
+                  );
                 }),
                 itemCount: _blogs.length,
               );

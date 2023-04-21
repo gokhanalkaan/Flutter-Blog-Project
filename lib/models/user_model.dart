@@ -9,7 +9,7 @@ class UserModel {
   String? profilePhoto;
   List<String>? followedUsers;
   List<String>? followers;
-  List<String>? likedBlogs;
+  List<Map<String, dynamic>>? likedBlogs;
   Timestamp? createdAt;
 
   UserModel(
@@ -38,7 +38,7 @@ class UserModel {
             ? List.from(data?['followers'])
             : null,
         likedBlogs: data?['likedBlogs'] is Iterable
-            ? List.from(data?['likedBlogs'])
+            ? List.from(data?['likedBlogs'].where((x) => x is Map))
             : null,
         createdAt: data?['createdAt']);
   }

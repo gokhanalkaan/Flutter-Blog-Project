@@ -20,6 +20,12 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
   @override
   Widget build(BuildContext context) {
     String currentUserId = ref.read(userProvider).userId;
+
+    var chats = ref.read(chatProvider).currentChats;
+    var val = ref.watch(chatProvider).currentChats.every(
+          (element) => chats.every((b) => element.chatId == b.chatId),
+        );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Chats"),
@@ -43,9 +49,13 @@ class _ChatsPageState extends ConsumerState<ChatsPage> {
                               (element) => element != currentUserId);
 
                           return ChatUser(
-                            chat: currChat,
-                            otherUserId: _otherUserId,
-                          );
+                              chat: currChat,
+                              otherUserId: _otherUserId,
+                              func: () => {
+                                    setState(
+                                      () {},
+                                    )
+                                  });
                         }));
                   } else {
                     return Center(

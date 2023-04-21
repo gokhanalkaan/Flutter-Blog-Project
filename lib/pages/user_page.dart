@@ -49,6 +49,7 @@ class _UserPageState extends ConsumerState<UserPage> {
     String userId = widget.user!.userId!;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("Blogify"),
         // automaticallyImplyLeading: false,
@@ -64,8 +65,11 @@ class _UserPageState extends ConsumerState<UserPage> {
                     child: Center(
                       child: CircleAvatar(
                           radius: 48,
-                          backgroundImage: NetworkImage(
-                              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png")),
+                          backgroundImage: NetworkImage(widget
+                                      .user!.profilePhoto!.length >
+                                  0
+                              ? widget.user!.profilePhoto!
+                              : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png")),
                     ),
                   ),
                   Column(

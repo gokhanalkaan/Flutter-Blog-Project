@@ -15,7 +15,7 @@ class BlogService extends ChangeNotifier {
   // bool _hasMoreCategoryBlog = true;
   final int _pageSize = 10;
 
-  List<String> currentUserLikedPost = [];
+  List<Map<String, dynamic>> currentUserLikedPost = [];
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
@@ -54,7 +54,7 @@ class BlogService extends ChangeNotifier {
       var sonuc = await _blogRef.where("creatorId", isEqualTo: creatorId).get();
 
       for (var user in sonuc.docs) {
-        blogs.add(BlogModel.fromFirestore(user));
+        blogs.insert(0, BlogModel.fromFirestore(user));
       }
 
       return blogs;
@@ -92,7 +92,7 @@ class BlogService extends ChangeNotifier {
       _lastCategoryBlogDoc = sonuc.docs[sonuc.size - 1];*/
 
       for (var user in sonuc.docs) {
-        blogs.add(BlogModel.fromFirestore(user));
+        blogs.insert(0, BlogModel.fromFirestore(user));
       }
 
       debugPrint(blogs.length.toString());
@@ -113,8 +113,16 @@ class BlogService extends ChangeNotifier {
           await _blogRef.where("likedUsers", arrayContains: userId).get();
 
       for (var user in sonuc.docs) {
-        likedBlogs.add(BlogModel.fromFirestore(user));
+        likedBlogs.insert(0, BlogModel.fromFirestore(user));
       }
+
+      if (userId == _firebaseAuth.currentUser!.uid) {
+        currentUserLikedPost = [];
+        currentUserLikedPost.addAll(likedBlogs
+            .map((e) => {"blogId": e.blogId, "likeCount": e.likeCount}));
+      }
+      /*currentUserLikedPost = [];
+      currentUserLikedPost.addAll(likedBlogs.map((e) => e.blogId!));*/
 
       debugPrint("liked blogs" + likedBlogs.first.toString());
 
@@ -143,10 +151,12 @@ class BlogService extends ChangeNotifier {
       for (var user in userResult.docs) {
         UserModel usr;
         usr = UserModel.fromFirestore(user);
-        currentUserLikedPost.addAll(usr.likedBlogs!);
+        // currentUserLikedPost.addAll(usr.likedBlogs!);
+
         followedUsers.addAll(usr.followedUsers!);
         _usermodel.followedUsers?.addAll(usr.followedUsers!);
       }
+      getUserLikedBlog(_firebaseAuth.currentUser!.uid);
 
       debugPrint(followedUsers.first.toString());
 
@@ -170,19 +180,14 @@ class BlogService extends ChangeNotifier {
     }
   }
 
-/*  void _setCurrentUserLikedPosts(List<BlogModel> timelineBlogs) {
-
-    currentUserLikedPost.add(timelineBlogs.map((e) => e.likedUsers.contains(_firebaseAuth.currentUser?.uid)?e.blogId:null)
-        );
-    
-  }*/
-
-  Future<bool> likePost(String blogId) async {
+  Future<bool> likePost(String blogId, int like) async {
     try {
       final _blogRef = _firestore.collection("blogs");
       final _userRef = _firestore.collection("users");
       await _userRef.doc(_firebaseAuth.currentUser?.uid).update({
-        "likedBlogs": FieldValue.arrayUnion([blogId])
+        "likedBlogs": FieldValue.arrayUnion([
+          {"blogId": blogId, "likeCount": like + 1}
+        ]),
       });
 
       var sonuc = await _blogRef.doc(blogId).update({
@@ -190,7 +195,7 @@ class BlogService extends ChangeNotifier {
         "likeCount": FieldValue.increment(1)
       });
 
-      currentUserLikedPost.add(blogId);
+      currentUserLikedPost.insert(0, {"blogId": blogId, "likeCount": like + 1});
       notifyListeners();
       debugPrint(currentUserLikedPost.length.toString());
 
@@ -206,7 +211,9 @@ class BlogService extends ChangeNotifier {
 
       final _userRef = _firestore.collection("users");
       await _userRef.doc(_firebaseAuth.currentUser?.uid).update({
-        "likedBlogs": FieldValue.arrayRemove([blogId]),
+        "likedBlogs": FieldValue.arrayRemove([
+          {"blogId": blogId}
+        ]),
       });
 
       await _blogRef.doc(blogId).update({
@@ -214,10 +221,10 @@ class BlogService extends ChangeNotifier {
         "likeCount": FieldValue.increment(-1)
       });
 
-      currentUserLikedPost.remove(
-          currentUserLikedPost.firstWhere((element) => element == blogId));
+      currentUserLikedPost.removeWhere((item) => item["blogId"] == blogId);
+
+      print("userservice " + currentUserLikedPost.length.toString());
       notifyListeners();
-      debugPrint(currentUserLikedPost.length.toString());
 
       return true;
     } on FirebaseException catch (e) {
@@ -247,6 +254,9 @@ final authProvider = StreamProvider<User?>((ref) {
   return ref.watch(userProvider).user;
 });
 
+/*final userLikedBlogsProvider = StreamProvider<List<BlogModel>>((ref) {
+  return ref.watch(blogProvider).currentUserLikedPost;
+});*/
 
 ///////////////////////
 

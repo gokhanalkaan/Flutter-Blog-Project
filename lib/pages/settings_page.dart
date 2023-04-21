@@ -5,7 +5,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blog_app/components/bottom_navbar.dart';
 import 'package:flutter_blog_app/pages/landing_page.dart';
+
+import 'package:flutter_blog_app/services/chat_services.dart';
 import 'package:flutter_blog_app/services/user_services.dart';
+import 'package:flutter_blog_app/services/blog_services.dart' as b;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -129,7 +132,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                                         fit: BoxFit.cover,
                                       )
                                     : Image.network(
-                                        _profilePhoto.length > 0
+                                        _profilePhoto.isNotEmpty
                                             ? _profilePhoto
                                             : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png",
                                         width: 90,
@@ -182,17 +185,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   SizedBox(
                     height: 30,
                   ),
-                  ElevatedButton(
-                      onPressed: () {
-                        _auth.signOut();
-                        //  ref.read(userProvider).logOut();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LandingPage()),
-                        );
-                      },
-                      child: Text("LogOut")),
                 ],
               ),
             )),

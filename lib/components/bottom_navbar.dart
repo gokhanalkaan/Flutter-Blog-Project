@@ -92,38 +92,6 @@ class _BottomNavbarState extends ConsumerState<BottomNavbar> {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () async {
-                    var value = await ref.read(userProvider).getLoggedInUser();
-                    setState(() {
-                      widget.selectedIndex = 2;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProfilePage(
-                                  user: value,
-                                )),
-                      );
-                    });
-                  },
-                  icon: widget.selectedIndex == 2
-                      ? Icon(
-                          Icons.person,
-                          color: Colors.blue.shade400,
-                        )
-                      : Icon(
-                          Icons.person,
-                          color: Colors.blue.shade100,
-                        ),
-                ),
-                const Text("Profile", style: const TextStyle(fontSize: 10))
-              ],
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(right: 0),
-            child: Row(
-              children: [
-                IconButton(
                   onPressed: () {
                     setState(() {
                       widget.selectedIndex = 4;
@@ -143,35 +111,41 @@ class _BottomNavbarState extends ConsumerState<BottomNavbar> {
                           color: Colors.blue.shade100,
                         ),
                 ),
-                const Text("Chats", style: const TextStyle(fontSize: 10))
-              ],
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(right: 1),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      widget.selectedIndex = 3;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SettingsPage()),
-                      );
-                    });
-                  },
-                  icon: widget.selectedIndex == 3
-                      ? Icon(
-                          Icons.settings,
-                          color: Colors.blue.shade400,
-                        )
-                      : Icon(
-                          Icons.settings,
-                          color: Colors.blue.shade100,
-                        ),
+                const Text("Chats", style: const TextStyle(fontSize: 10)),
+                Container(
+                  margin: EdgeInsets.only(right: 0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          var value =
+                              await ref.read(userProvider).getLoggedInUser();
+                          setState(() {
+                            widget.selectedIndex = 2;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ProfilePage(
+                                        user: value,
+                                      )),
+                            );
+                          });
+                        },
+                        icon: widget.selectedIndex == 2
+                            ? Icon(
+                                Icons.person,
+                                color: Colors.blue.shade400,
+                              )
+                            : Icon(
+                                Icons.person,
+                                color: Colors.blue.shade100,
+                              ),
+                      ),
+                      const Text("Profile",
+                          style: const TextStyle(fontSize: 10))
+                    ],
+                  ),
                 ),
-                const Text("Settings", style: const TextStyle(fontSize: 10))
               ],
             ),
           ),

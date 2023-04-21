@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blog_app/pages/landing_page.dart';
+import 'package:flutter_blog_app/pages/settings_page.dart';
 import 'package:flutter_blog_app/pages/users_page.dart';
 import 'package:flutter_blog_app/services/user_services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,9 +34,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    val = (selectedIndex == 0
+    /* val = selectedIndex == 0
         ? ref.read(blogProvider).getUserBlog(widget.user!.userId)
-        : ref.read(blogProvider).getUserLikedBlog(widget.user!.userId!));
+        : ref.read(blogProvider).getUserLikedBlog(widget.user!.userId!);*/
 
     followers = widget.user!.followers!.length;
 
@@ -52,9 +54,62 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     String userId = widget.user!.userId!;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Blogify"),
         automaticallyImplyLeading: false,
+        actions: [
+          PopupMenuButton(
+              // add icon, by default "3 dot" icon
+              // icon: Icon(Icons.book)
+              itemBuilder: (context) {
+            return [
+              PopupMenuItem<int>(
+                value: 0,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.settings,
+                      color: Colors.black,
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text("Settings"),
+                  ],
+                ),
+              ),
+              PopupMenuItem<int>(
+                value: 1,
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.black),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text("Logout"),
+                  ],
+                ),
+              ),
+            ];
+          }, onSelected: (value) {
+            if (value == 0) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsPage()),
+              );
+            } else if (value == 1) {
+              FirebaseAuth.instance.signOut();
+              // ref.invalidate(userProvider);
+
+              ref.read(userProvider).logOut();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LandingPage()),
+              );
+            }
+          }),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -140,12 +195,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               TextButton(
                                   onPressed: () {
                                     setState(() {
-                                      if (selectedIndex != 0) {
-                                        selectedIndex = 0;
-                                        val = ref
-                                            .read(blogProvider)
-                                            .getUserBlog(widget.user!.userId!);
-                                      }
+                                      selectedIndex = 0;
+                                      val = ref
+                                          .read(blogProvider)
+                                          .getUserBlog(widget.user!.userId!);
                                     });
                                   },
                                   child: Text(
@@ -172,13 +225,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               TextButton(
                                   onPressed: () {
                                     setState(() {
-                                      if (selectedIndex != 1) {
-                                        selectedIndex = 1;
-                                        val = ref
-                                            .read(blogProvider)
-                                            .getUserLikedBlog(
-                                                widget.user!.userId!);
-                                      }
+                                      selectedIndex = 1;
+                                      val = ref
+                                          .read(blogProvider)
+                                          .getUserLikedBlog(
+                                              widget.user!.userId!);
                                     });
                                   },
                                   child: Text("Likes",
@@ -194,7 +245,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   ),
                   Expanded(
                       child: FutureBuilder<List<BlogModel>>(
-                    future: val,
+                    future: selectedIndex == 0
+                        ? ref
+                            .read(blogProvider)
+                            .getUserBlog(widget.user!.userId)
+                        : ref
+                            .read(blogProvider)
+                            .getUserLikedBlog(widget.user!.userId!),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         List<BlogModel> blogs = snapshot.data!;
@@ -207,8 +264,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               debugPrint(model.blogQuote);
                               debugPrint(model.blogTitle);
                               debugPrint(model.creatorId);
-                              debugPrint("likes page liked" +
-                                  model.likedUsers!.length.toString());
+                              debugPrint("likes page liked" + index.toString());
 
                               return Blog(
                                 blog: model,

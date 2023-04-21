@@ -4,15 +4,21 @@ import 'package:flutter_blog_app/models/blog_model.dart';
 import 'package:flutter_blog_app/models/chat_model.dart';
 import 'package:flutter_blog_app/models/user_model.dart';
 import 'package:flutter_blog_app/pages/messages.dart';
+import 'package:flutter_blog_app/services/chat_services.dart';
 import 'package:flutter_blog_app/services/user_services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ChatUser extends ConsumerStatefulWidget {
-  const ChatUser({Key? key, required this.chat, required this.otherUserId})
+  const ChatUser(
+      {Key? key,
+      required this.chat,
+      required this.otherUserId,
+      required this.func})
       : super(key: key);
   final ChatModel chat;
   final String otherUserId;
+  final Function func;
 
   @override
   ConsumerState<ChatUser> createState() => _ChatUserState();
@@ -38,87 +44,92 @@ class _ChatUserState extends ConsumerState<ChatUser> {
         if (snapshot.hasData) {
           UserModel _user = snapshot.data!;
 
-          return Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: (() {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => Messages(
-                                userId: widget.otherUserId,
-                                chatId: widget.chat.chatId,
-                              )),
-                    );
-                  }),
-                  child: Container(
-                    width: size.width,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          margin: EdgeInsets.only(right: 4),
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              border: Border.all(
-                                  color: Colors.blueGrey.shade300, width: 2),
-                              borderRadius: BorderRadius.circular(40)),
-                          child: CircleAvatar(
-                            backgroundImage: NetworkImage(_user
-                                        .profilePhoto!.length >
-                                    0
-                                ? _user.profilePhoto!
-                                : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png"),
+          return GestureDetector(
+            onLongPress: (() async {
+              _dialogBuilder(context);
+            }),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: (() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Messages(
+                                  userId: widget.otherUserId,
+                                  chatId: widget.chat.chatId,
+                                )),
+                      );
+                    }),
+                    child: Container(
+                      width: size.width,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            margin: EdgeInsets.only(right: 4),
+                            decoration: BoxDecoration(
+                                color: Colors.blue,
+                                border: Border.all(
+                                    color: Colors.blueGrey.shade300, width: 2),
+                                borderRadius: BorderRadius.circular(40)),
+                            child: CircleAvatar(
+                              backgroundImage: NetworkImage(_user
+                                          .profilePhoto!.length >
+                                      0
+                                  ? _user.profilePhoto!
+                                  : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460__340.png"),
+                            ),
                           ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _user.username!,
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w600),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(right: 3),
-                              width: size.width - 155,
-                              child: Text(
-                                widget.chat.lastMessage!.length > 20
-                                    ? widget.chat.lastMessage!
-                                            .substring(0, 61) +
-                                        "..."
-                                    : widget.chat.lastMessage!,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _user.username!,
                                 textAlign: TextAlign.start,
-                                overflow: TextOverflow.visible,
                                 style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    overflow: TextOverflow.visible),
+                                    fontSize: 20, fontWeight: FontWeight.w600),
                               ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          timeago.format(widget.chat.updatedAt!.toDate()),
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w200,
-                              overflow: TextOverflow.visible),
-                        )
-                      ],
+                              Container(
+                                margin: EdgeInsets.only(right: 3),
+                                width: size.width - 155,
+                                child: Text(
+                                  widget.chat.lastMessage!.length > 20
+                                      ? widget.chat.lastMessage!
+                                              .substring(0, 61) +
+                                          "..."
+                                      : widget.chat.lastMessage!,
+                                  textAlign: TextAlign.start,
+                                  overflow: TextOverflow.visible,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      overflow: TextOverflow.visible),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            timeago.format(widget.chat.updatedAt!.toDate()),
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w200,
+                                overflow: TextOverflow.visible),
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const Divider(
-                  height: 1,
-                  thickness: 1,
-                )
-              ],
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                  )
+                ],
+              ),
             ),
           );
         } else {
@@ -127,6 +138,44 @@ class _ChatUserState extends ConsumerState<ChatUser> {
       },
 
       /////////////////////////////////////////
+    );
+  }
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Conversation'),
+          content:
+              const Text('Are you sure you want to delete the conversation ?'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Yes'),
+              onPressed: () async {
+                bool result =
+                    await ref.read(chatProvider).deleteChat(widget.chat.chatId);
+                if (result == true) {
+                  widget.func();
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

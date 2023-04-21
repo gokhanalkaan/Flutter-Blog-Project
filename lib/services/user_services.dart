@@ -181,8 +181,7 @@ class UserService extends ChangeNotifier {
     BlogService _blogService = BlogService();
     followedUsers = [];
     followers = [];
-    currentUser=null;
-    
+    currentUser = null;
 
     _blogService.currentUserLikedPost = [];
 

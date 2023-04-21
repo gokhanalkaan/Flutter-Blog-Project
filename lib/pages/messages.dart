@@ -88,11 +88,13 @@ class _MessagesState extends ConsumerState<Messages> {
                         color: Color.fromRGBO(76, 175, 80, 1)),
                     child: IconButton(
                         onPressed: () {
-                          ref.read(chatProvider).sendMessage(
-                                widget.userId,
-                                _messageController.text,
-                              );
-                          _messageController.text = '';
+                          if (_messageController.text.length > 0) {
+                            ref.read(chatProvider).sendMessage(
+                                  widget.userId,
+                                  _messageController.text,
+                                );
+                            _messageController.text = '';
+                          }
                         },
                         icon: Icon(Icons.send)))
               ],

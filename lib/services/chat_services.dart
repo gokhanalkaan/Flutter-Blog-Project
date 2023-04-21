@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ChatService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final UserService _userService = UserService();
+  List<ChatModel> currentChats = [];
 
   Future<bool> createChat(String userId) async {
     final String chatId = int.parse(userId) > int.parse(_userService.userId)
@@ -134,9 +135,38 @@ class ChatService extends ChangeNotifier {
         for (var chat in sonuc.docs) {
           chats.add(ChatModel.fromFirestore(chat));
         }
+
+        currentChats.addAll(chats);
       }
 
       return chats;
+    } on FirebaseException catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  Future<bool> deleteChat(String chatId) async {
+    try {
+      final _chatRef = _firestore.collection("chats");
+      _chatRef.doc(chatId).delete();
+
+      Future<QuerySnapshot> books =
+          _chatRef.doc(chatId).collection("messages").get();
+      books.then((value) {
+        value.docs.forEach((element) {
+          _chatRef
+              .doc(chatId)
+              .collection("messages")
+              .doc(element.id)
+              .delete()
+              .then((value) => print("success"));
+        });
+      });
+
+      // _chatRef.delete(chatId).collection("messages").delete();
+      currentChats.remove((element) => element.chatId == chatId);
+
+      return true;
     } on FirebaseException catch (e) {
       return Future.error(e);
     }
