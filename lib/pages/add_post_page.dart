@@ -68,8 +68,7 @@ class _AddPostPageState extends ConsumerState<AddPostPage> {
 
   Future<bool> _handleAddPost(User? _user, WidgetRef ref) async {
     final downloadUrl = await _downloadImage();
-
-    // "https://assets.weforum.org/community/image/3v8PB95CCSn86e5fowthRAybW4ajSY18z2FfVPi2spk.jpeg";
+    //  "https://assets.weforum.org/community/image/3v8PB95CCSn86e5fowthRAybW4ajSY18z2FfVPi2spk.jpeg";
 
     if (downloadUrl != null) {
       final result = ref.read(blogProvider).addBlog(
@@ -85,13 +84,6 @@ class _AddPostPageState extends ConsumerState<AddPostPage> {
     }
 
     return false;
-
-    /*  final result = ref.read(blogProvider).addBlog(
-        _user?.uid,
-        _titleController.text,
-        _quoteController.text,
-           downloadUrl);
-    return result;*/
   }
 
   @override

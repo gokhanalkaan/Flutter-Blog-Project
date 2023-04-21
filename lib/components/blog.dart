@@ -22,9 +22,9 @@ class Blog extends ConsumerStatefulWidget {
 
 class _BlogState extends ConsumerState<Blog> {
   late Future<UserModel> _blogOwner;
-  // widget.likeCount!;
-  late List<String> likedPosts;
-  late int like;
+  late int like = widget.blog.likedUsers!.length;
+  //late List<String> likedPosts;
+  // late int like;
 
   @override
   void initState() {
@@ -189,9 +189,7 @@ class _BlogState extends ConsumerState<Blog> {
                 ],
               ),
               FutureBuilder<UserModel>(
-                  future: ref
-                      .read(userProvider)
-                      .getUserWithId(widget.blog.creatorId!),
+                  future: _blogOwner,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       UserModel _user = snapshot.data!;
